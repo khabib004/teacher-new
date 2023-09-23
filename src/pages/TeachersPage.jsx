@@ -42,10 +42,11 @@ const TeachersPage = () => {
     },
   ];
 
+
   const [ form ] = Form.useForm();
   const [ data, setData ] = useState( [] );
   const [ isModalOpen, setIsModalOpen ] = useState( false );
-
+  const [selected, setSelected] = useState(null);
   useEffect( () => {
     getData();
   }, [] );
@@ -59,13 +60,20 @@ const TeachersPage = () => {
     }
   }
   const showModal = () => {
+    setSelected(null);
     form.resetFields();
     setIsModalOpen( true );
   };
   const handleOk = async() => {
     try {
       const values = await form.validateFields();
-      await request.post('teacher', values);
+      if (selected == null) {
+        await request.post('teacher', values);
+
+      } else {
+        await request.put( `teacher/${selected}`, values );
+
+      }
       getData();
       setIsModalOpen( false );
       
@@ -77,9 +85,11 @@ const TeachersPage = () => {
     setIsModalOpen( false );
   };
   async function edit (id) {
+    setSelected(id);
     setIsModalOpen(true);
-    let {data} = request.get(`teacher/${id}`);
-    form.setFieldValue(data);
+    let {data} = await request.get(`teacher/${id}`);
+    console.log(data.id);
+    form.setFieldsValue(data);
   }
   return (
     <Fragment>
@@ -117,7 +127,7 @@ const TeachersPage = () => {
           </Form.Item>
           <Form.Item
             label="LastName"
-            name="LastName"
+            name="lastName"
             rules={[
               {
                 required: true,
